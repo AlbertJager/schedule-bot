@@ -7,8 +7,8 @@ API_TOKEN = TOKEN
 
 if __name__=='__main__':
     bot = telebot.TeleBot(API_TOKEN)
-    url = 'https://vk.com/valerrienikonova'
 
+    
     @bot.message_handler(commands=['start'])
     def start(message):
         bot.reply_to(message, 'Привет, товарищ!')
@@ -18,7 +18,7 @@ if __name__=='__main__':
     def send_chat_info(message):
         bot.reply_to(message, message.from_user.username)
 
-
+    
     @bot.message_handler(commands=['schedule'])
     def getting_group_name(message):
         '''Получаем или выводим название группы'''
