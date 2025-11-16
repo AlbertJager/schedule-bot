@@ -23,7 +23,7 @@ if __name__=='__main__':
     def getting_group_name(message):
         '''Получаем или выводим название группы'''
 
-        with open('users.json', 'r') as file:
+        with open('users.json', 'r', encoding='utf-8') as file:
             users = json.load(file) 
         if message.from_user.username in users: 
             sent = bot.send_message(message.chat.id, f'Текущая группа: {users[message.from_user.username]["group"]}')
@@ -49,10 +49,10 @@ if __name__=='__main__':
             sent = bot.send_message(message.chat.id, 'Данные о группе неверные, введите в похожем формате: ИТ2304')
             bot.register_next_step_handler(sent, new_group)
         else:
-            with open('users.json', 'r') as f:
+            with open('users.json', 'r', encoding='utf-8') as f:
                 users = json.load(f)
             users[message.from_user.username] = {"group": group, "schedule": schedule}
-            with open('users.json', 'w') as f:
+            with open('users.json', 'w', encoding='utf-8') as f:
                 users = json.dump(users, f, ensure_ascii=False, indent=2)    
             getting_choice(message)
 
@@ -79,21 +79,21 @@ if __name__=='__main__':
             return
         
         if message.text == 'Да' or message.text == 'да' or message.text == 'ДА':
-            with open('users.json', 'r') as f:
+            with open('users.json', 'r', encoding='utf-8') as f:
                 users = json.load(f)
             del users[message.from_user.username]
-            with open('users.json', 'w') as f:
+            with open('users.json', 'w', encoding='utf-8') as f:
                 users = json.dump(users, f, ensure_ascii=False, indent=2)
             getting_group_name(message)
         elif message.text == 'Нет' or message.text == 'нет' or message.text == 'НЕТ':
             # обновление расписания
-            with open('users.json', 'r') as f:
+            with open('users.json', 'r', encoding='utf-8') as f:
                 users = json.load(f)
             
             schedule = get_schedule(users[message.from_user.username]["group"])
             users[message.from_user.username]["schedule"] = schedule
             
-            with open('users.json', 'w') as f:
+            with open('users.json', 'w', encoding='utf-8') as f:
                 users = json.dump(users, f, ensure_ascii=False, indent=2)
             getting_choice(message)
         else:
@@ -128,7 +128,7 @@ if __name__=='__main__':
             getting_group_name(message)  # вызываем начальный обработчик
             return
         
-        with open('users.json', 'r') as f:
+        with open('users.json', 'r', encoding='utf-8') as f:
             users = json.load(f)
         schedule = users[message.from_user.username]["schedule"]
         text = message.text.strip().capitalize()

@@ -31,6 +31,8 @@ def get_page_by_group(group: str):
     
     url = f'https://s.kubsau.ru/?type_schedule=1&val={group}'
     headers = {"user-agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"}
+
+
     response = requests.get(url, headers=headers)
     souped = BeautifulSoup(response.text, 'lxml')
     
