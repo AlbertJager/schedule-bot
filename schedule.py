@@ -158,5 +158,3 @@ def get_schedule(group: str):
             main_dict[key_week][key_date] = res    
         
         return(main_dict)
-# group = input('Введите название группы. Например: ИТ2304| -> ')
-# get_schedule(group)

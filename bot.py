@@ -2,10 +2,8 @@ from schedule import get_schedule
 import telebot
 from config import TOKEN
 import json
-import webbrowser
+import datetime
 API_TOKEN = TOKEN
-GROUP = ''
-
 
 if __name__=='__main__':
     bot = telebot.TeleBot(API_TOKEN)
@@ -21,51 +19,147 @@ if __name__=='__main__':
         bot.reply_to(message, message.from_user.username)
 
 
-    @bot.message_handler(func=lambda m: m.text.lower() == 'вк')
-    def open_vk(message):
-        webbrowser.open(url, new= 2)
-
-
     @bot.message_handler(commands=['schedule'])
-    def schedule(message):
-        sent = bot.reply_to(message, 'Введите название группы. Например: ИТ2304')
-        bot.register_next_step_handler(sent, schedule_choice)
-        #вызвать другой обработчик группы
+    def getting_group_name(message):
+        '''Получаем или выводим название группы'''
 
-
-    def schedule_choice(message): 
-        global GROUP
-        GROUP = message.text  # вот здесь нужно обработать 
-
-       
-        result = get_schedule(GROUP)
-        if result == None: # словарь вида {'2025-11-15': 'text'}
-            bot.send_message(message.chat.id, 'Данные о группе неверные, введите в похожем формате: ИТ2304')
-            bot.register_next_step_handler(message, schedule_choice)
-        else:
-            week = 'first_week'
-            date = '2025-11-17'
-            for key, value in result[week].items():
-                bot.send_message(message.chat.id, value)
+        with open('users.json', 'r') as file:
+            users = json.load(file) 
+        if message.from_user.username in users: 
+            sent = bot.send_message(message.chat.id, f'Текущая группа: {users[message.from_user.username]["group"]}')
+            change_group_or_not(sent)
             
+        else:
+            sent = bot.reply_to(message, 'Введите название группы. Например: ИТ2304', reply_markup= telebot.types.ReplyKeyboardRemove())
+            bot.register_next_step_handler(sent, new_group)
+        #вызвать другой обработчик группы
+    
+
+    def new_group(message):
+        '''Добавление номера группы'''
+        if message.text == '/schedule':
+            # bot.clear_step_handler_by_chat_id(message.chat.id)  # отменяем текущие ожидания
+            getting_group_name(message)  # вызываем начальный обработчик
+            return 
+        
+        group = message.text.upper()  # от пользователя
+        
+        schedule = get_schedule(group)
+        if schedule == None: # словарь вида {'2025-11-15': 'text'}
+            sent = bot.send_message(message.chat.id, 'Данные о группе неверные, введите в похожем формате: ИТ2304')
+            bot.register_next_step_handler(sent, new_group)
+        else:
+            with open('users.json', 'r') as f:
+                users = json.load(f)
+            users[message.from_user.username] = {"group": group, "schedule": schedule}
+            with open('users.json', 'w') as f:
+                users = json.dump(users, f, ensure_ascii=False, indent=2)    
+            getting_choice(message)
+
+    def change_group_or_not(message):
+        '''Изменить группу или нет(если пользователь уже вводил группу)'''
+        if message.text == '/schedule':
+            # bot.clear_step_handler_by_chat_id(message.chat.id)  # отменяем текущие ожидания
+            getting_group_name(message)  # вызываем начальный обработчик
+            return
+        
+        markup = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+        btn_y = telebot.types.KeyboardButton('Да')
+        btn_n = telebot.types.KeyboardButton('Нет')
+        markup.add(btn_y, btn_n)
+        sent = bot.send_message(message.chat.id, f'Хотите изменить название группы?', reply_markup=markup)
+        bot.register_next_step_handler(sent, group_choice)
     
     
-    #ДВЕ НЕДЕЛИ    
-    #for key, value in result[first_week].items():
-                #bot.send_message(message.chat.id, value)
-    #for key, value in result[second_week].items():
-                #bot.send_message(message.chat.id, value)
+    def group_choice(message):
+        '''Изменить группу или нет(если пользователь уже вводил группу)'''
+        if message.text == '/schedule':
+            bot.clear_step_handler_by_chat_id(message.chat.id)  # отменяем текущие ожидания
+            getting_group_name(message)  # вызываем начальный обработчик
+            return
+        
+        if message.text == 'Да' or message.text == 'да' or message.text == 'ДА':
+            with open('users.json', 'r') as f:
+                users = json.load(f)
+            del users[message.from_user.username]
+            with open('users.json', 'w') as f:
+                users = json.dump(users, f, ensure_ascii=False, indent=2)
+            getting_group_name(message)
+        elif message.text == 'Нет' or message.text == 'нет' or message.text == 'НЕТ':
+            # обновление расписания
+            with open('users.json', 'r') as f:
+                users = json.load(f)
+            
+            schedule = get_schedule(users[message.from_user.username]["group"])
+            users[message.from_user.username]["schedule"] = schedule
+            
+            with open('users.json', 'w') as f:
+                users = json.dump(users, f, ensure_ascii=False, indent=2)
+            getting_choice(message)
+        else:
+            sent = bot.reply_to(message, "Введите Да или Нет")
+            bot.register_next_step_handler(sent, group_choice)
     
     
+    def getting_choice(message):
+        '''Создает кнопки и просит выбрать расписание'''
+
+        if message.text == '/schedule':
+            # bot.clear_step_handler_by_chat_id(message.chat.id)  # отменяем текущие ожидания
+            getting_group_name(message)  # вызываем начальный обработчик
+            return
+         
+        markup = telebot.types.ReplyKeyboardMarkup(row_width=2, one_time_keyboard=True, resize_keyboard=True)
+        btn_today = telebot.types.KeyboardButton('На сегодня')
+        btn_tomorrow = telebot.types.KeyboardButton('На завтра')
+        btn_first_week = telebot.types.KeyboardButton('На первую неделю')
+        btn_second_week = telebot.types.KeyboardButton('На вторую неделю')
+        markup.add(btn_today, btn_tomorrow, btn_first_week, btn_second_week)
+                 
+        sent = bot.reply_to(message, 'Выберите расписание:', reply_markup=markup)
+        bot.register_next_step_handler(sent, final_schedule)
+
     
-    
-    
-    
-    
-    
-    
-    @bot.message_handler(commands=['music'])
-    def send_music(message):
-        with open(r'D:\Scaletta\Music\Fairy Tail Soundtracks\4.Prelude to Destruction.mp3', 'rb') as music:
-            bot.send_audio(message.chat.id, music)
+    def final_schedule(message):
+        '''Отправляет результат'''
+
+        if message.text == '/schedule':
+            # bot.clear_step_handler_by_chat_id(message.chat.id)  # отменяем текущие ожидания
+            getting_group_name(message)  # вызываем начальный обработчик
+            return
+        
+        with open('users.json', 'r') as f:
+            users = json.load(f)
+        schedule = users[message.from_user.username]["schedule"]
+        text = message.text.strip().capitalize()
+        
+        if text == 'На сегодня':
+            today = datetime.date.today().__str__()
+            if today in schedule["first_week"]:
+                week = "first_week"
+            else:
+                week = "second_week"
+            bot.reply_to(message, schedule[week][today], reply_markup=telebot.types.ReplyKeyboardRemove())
+        
+        elif text == 'На завтра':
+            tomorrow = (datetime.date.today() + datetime.timedelta(days=1)).__str__()
+            if tomorrow in schedule["first_week"]:
+                week = "first_week"
+            else:
+                week = "second_week"
+            bot.reply_to(message, schedule[week][tomorrow], reply_markup=telebot.types.ReplyKeyboardRemove())
+        elif text == 'На первую неделю':
+            week = "first_week"
+
+            for value in schedule[week].values():
+                    bot.send_message(message.chat.id, value, reply_markup=telebot.types.ReplyKeyboardRemove())
+        elif text == 'На вторую неделю':
+            week = "second_week"
+
+            for value in schedule[week].values():
+                    bot.send_message(message.chat.id, value, reply_markup=telebot.types.ReplyKeyboardRemove())    
+        else:
+            sent = bot.reply_to(message, 'Неверный выбор. Должен быть: На сегодня/На завтра/На первую неделю/На вторую неделю')
+            bot.register_next_step_handler(sent, final_schedule)
+
     bot.infinity_polling()
