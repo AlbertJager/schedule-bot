@@ -16,8 +16,10 @@ if __name__=='__main__':
 
     @bot.message_handler(func=lambda message: message.text.lower()=='чат')
     def send_chat_info(message):
-        bot.reply_to(message, message.from_user.username)
-
+        try:
+            bot.reply_to(message, message.from_user.username)
+        except Exception as e:
+            bot.reply_to(message, 'Нет имени пользователя')
     
     @bot.message_handler(commands=['schedule'])
     def getting_group_name(message):

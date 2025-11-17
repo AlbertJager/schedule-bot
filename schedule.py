@@ -91,7 +91,7 @@ def get_schedule(group: str):
             
             for_print = f'{group} | {day_of_the_week} | {date} {month} | {num_of_week}'
 
-            frame_width = 57 if 57 % len(for_print) == 0 else 58  # выбираем ширину рамки
+            # frame_width = 57 if 57 % len(for_print) == 0 else 58  # выбираем ширину рамки
 
             key_date = f'{CURRENT_YEAR}-{months[month]}-{date}'
             
