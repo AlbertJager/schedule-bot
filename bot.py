@@ -44,6 +44,7 @@ if __name__=='__main__':
 
     
     def changing_group(message):
+        '''Изменение группы в БД'''
         group = message.text.upper()  # ввод пользователя
         
         if get_schedule(group) == None: # словарь вида {'2025-11-15': 'text'}
@@ -75,10 +76,10 @@ if __name__=='__main__':
 
     def new_group(message):
         '''Добавление номера группы'''
-        if message.text == '/schedule':
-            # bot.clear_step_handler_by_chat_id(message.chat.id)  # отменяем текущие ожидания
-            getting_group_name(message)  # вызываем начальный обработчик
-            return 
+        # if message.text == '/schedule':
+        #     # bot.clear_step_handler_by_chat_id(message.chat.id)  # отменяем текущие ожидания
+        #     getting_group_name(message)  # вызываем начальный обработчик
+        #     return 
         
         group = message.text.upper()  # от пользователя
 
@@ -141,10 +142,10 @@ if __name__=='__main__':
     def getting_choice(message):
         '''Создает кнопки и просит выбрать расписание'''
 
-        if message.text == '/schedule':
-            # bot.clear_step_handler_by_chat_id(message.chat.id)  # отменяем текущие ожидания
-            getting_group_name(message)  # вызываем начальный обработчик
-            return
+        # if message.text == '/schedule':
+        #     # bot.clear_step_handler_by_chat_id(message.chat.id)  # отменяем текущие ожидания
+        #     getting_group_name(message)  # вызываем начальный обработчик
+        #     return
          
         markup = telebot.types.ReplyKeyboardMarkup(row_width=2, one_time_keyboard=True, resize_keyboard=True)
         btn_today = telebot.types.KeyboardButton('На сегодня')
@@ -160,10 +161,10 @@ if __name__=='__main__':
     def final_schedule(message):
         '''Отправляет результат'''
 
-        if message.text == '/schedule':
-            # bot.clear_step_handler_by_chat_id(message.chat.id)  # отменяем текущие ожидания
-            getting_group_name(message)  # вызываем начальный обработчик
-            return
+        # if message.text == '/schedule':
+        #     # bot.clear_step_handler_by_chat_id(message.chat.id)  # отменяем текущие ожидания
+        #     getting_group_name(message)  # вызываем начальный обработчик
+        #     return
         
         with open('users.json', 'r', encoding='utf-8') as f:
             users = json.load(f)
