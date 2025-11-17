@@ -3,18 +3,11 @@ import telebot
 from config import TOKEN
 import json
 import datetime
-from auto_push import get_file_sha, update_file  #content, sha
 API_TOKEN = TOKEN
 
 if __name__=='__main__':
     bot = telebot.TeleBot(API_TOKEN)
 
-    def update_local_json(data):
-        with open('users.json', 'w', encoding='utf-8') as f:
-            json.dump(data, f, ensure_ascii=False, indent=2)
-        # Здесь вызываем код для пуша на GitHub через API:
-        sha = get_file_sha()
-        update_file(json.dumps(data, ensure_ascii=False), sha)
 
 
     @bot.message_handler(commands=['start'])
@@ -42,8 +35,6 @@ if __name__=='__main__':
             with open('users.json', 'w', encoding='utf-8') as f:
                 json.dump(users, f, ensure_ascii=False, indent=2) 
 
-            update_local_json(users)
-
             getting_new_changed_group(message)
         else:
             bot.reply_to(message, 'Нет данных о группе. Для начала вызовите расписание и введите группу.')
@@ -70,7 +61,6 @@ if __name__=='__main__':
             with open('users.json', 'w', encoding='utf-8') as f:
                 users = json.dump(users, f, ensure_ascii=False, indent=2)
             
-            update_local_json(users)
             bot.reply_to(message, 'Группа успешно изменена!')
 
 
@@ -110,7 +100,6 @@ if __name__=='__main__':
             with open('users.json', 'w', encoding='utf-8') as f:
                 users = json.dump(users, f, ensure_ascii=False, indent=2)    
 
-            update_local_json(users)
             getting_choice(message)
 
     # def change_group_or_not(message):
