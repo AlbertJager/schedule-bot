@@ -56,6 +56,7 @@ if __name__=='__main__':
             users[message.from_user.username] = {"group": group}
             with open('users.json', 'w', encoding='utf-8') as f:
                 users = json.dump(users, f, ensure_ascii=False, indent=2)
+            bot.reply_to(message, 'Группа успешно изменена!')
 
 
     @bot.message_handler(commands=['schedule'])
