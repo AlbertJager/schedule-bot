@@ -24,6 +24,7 @@ if __name__=='__main__':
     
     @bot.message_handler(commands=['change_group'])
     def change_group(message):
+        '''Проверяет есть ли такой пользователь, если нет, то нет смысла менять пустоту'''
         username = message.from_user.username
         with open('users.json', 'r', encoding='utf-8') as f:
             users = json.load(f)
@@ -31,10 +32,31 @@ if __name__=='__main__':
             del users[username]
             with open('users.json', 'w', encoding='utf-8') as f:
                 json.dump(users, f, ensure_ascii=False, indent=2) 
-            getting_group_name(message)
+            getting_new_changed_group(message)
         else:
             bot.reply_to(message, 'Нет данных о группе. Для начала вызовите расписание и введите группу.')
+
     
+    def getting_new_changed_group(message):
+        '''Изменяет группу и сразу обновляет расписание'''
+        sent = bot.reply_to(message, 'Введите название группы. Например: ИТ2304(Изменение группы)', reply_markup= telebot.types.ReplyKeyboardRemove())
+        bot.register_next_step_handler(sent, changing_group)
+
+    
+    def changing_group(message):
+        group = message.text.upper()  # ввод пользователя
+        
+        if get_schedule(group) == None: # словарь вида {'2025-11-15': 'text'}
+            sent = bot.send_message(message.chat.id, 'Данные о группе неверные, введите в похожем формате: ИТ2304')
+            bot.register_next_step_handler(sent, changing_group)
+        else:
+            with open('users.json', 'r', encoding='utf-8') as f:
+                users = json.load(f)
+            users[message.from_user.username] = {"group": group}
+            with open('users.json', 'w', encoding='utf-8') as f:
+                users = json.dump(users, f, ensure_ascii=False, indent=2)
+
+
     @bot.message_handler(commands=['schedule'])
     def getting_group_name(message):
         '''Получаем или выводим название группы'''
@@ -59,15 +81,14 @@ if __name__=='__main__':
             return 
         
         group = message.text.upper()  # от пользователя
-        
-        schedule = get_schedule(group)
-        if schedule == None: # словарь вида {'2025-11-15': 'text'}
+
+        if get_schedule(group) == None: # словарь вида {'2025-11-15': 'text'}
             sent = bot.send_message(message.chat.id, 'Данные о группе неверные, введите в похожем формате: ИТ2304')
             bot.register_next_step_handler(sent, new_group)
         else:
             with open('users.json', 'r', encoding='utf-8') as f:
                 users = json.load(f)
-            users[message.from_user.username] = {"group": group, "schedule": schedule}
+            users[message.from_user.username] = {"group": group}
             with open('users.json', 'w', encoding='utf-8') as f:
                 users = json.dump(users, f, ensure_ascii=False, indent=2)    
             getting_choice(message)
@@ -146,7 +167,7 @@ if __name__=='__main__':
         
         with open('users.json', 'r', encoding='utf-8') as f:
             users = json.load(f)
-        schedule = users[message.from_user.username]["schedule"]
+        schedule = get_schedule(users[message.from_user.username]["group"])
         text = message.text.strip().capitalize()
         
         if text == 'На сегодня':
