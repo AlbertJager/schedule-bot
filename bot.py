@@ -20,6 +20,20 @@ if __name__=='__main__':
             bot.reply_to(message, message.from_user.username)
         except Exception as e:
             bot.reply_to(message, 'Нет имени пользователя')
+
+    
+    @bot.message_handler(commands=['change_group'])
+    def change_group(message):
+        username = message.from_user.username
+        with open('users.json', 'r', encoding='utf-8') as f:
+            users = json.load(f)
+        if username in users:
+            del users[username]
+            with open('users.json', 'w', encoding='utf-8') as f:
+                json.dump(users, f, ensure_ascii=False, indent=2) 
+            getting_group_name(message)
+        else:
+            bot.reply_to(message, 'Нет данных о группе. Для начала вызовите расписание и введите группу.')
     
     @bot.message_handler(commands=['schedule'])
     def getting_group_name(message):
@@ -28,9 +42,9 @@ if __name__=='__main__':
         with open('users.json', 'r', encoding='utf-8') as file:
             users = json.load(file) 
         if message.from_user.username in users: 
-            sent = bot.send_message(message.chat.id, f'Текущая группа: {users[message.from_user.username]["group"]}')
-            change_group_or_not(sent)
-            
+            # sent = bot.send_message(message.chat.id, f'Текущая группа: {users[message.from_user.username]["group"]}')
+            # change_group_or_not(sent)
+            getting_choice(message)
         else:
             sent = bot.reply_to(message, 'Введите название группы. Например: ИТ2304', reply_markup= telebot.types.ReplyKeyboardRemove())
             bot.register_next_step_handler(sent, new_group)
@@ -58,49 +72,49 @@ if __name__=='__main__':
                 users = json.dump(users, f, ensure_ascii=False, indent=2)    
             getting_choice(message)
 
-    def change_group_or_not(message):
-        '''Изменить группу или нет(если пользователь уже вводил группу)'''
-        if message.text == '/schedule':
-            # bot.clear_step_handler_by_chat_id(message.chat.id)  # отменяем текущие ожидания
-            getting_group_name(message)  # вызываем начальный обработчик
-            return
+    # def change_group_or_not(message):
+    #     '''Изменить группу или нет(если пользователь уже вводил группу)'''
+    #     if message.text == '/schedule':
+    #         # bot.clear_step_handler_by_chat_id(message.chat.id)  # отменяем текущие ожидания
+    #         getting_group_name(message)  # вызываем начальный обработчик
+    #         return
         
-        markup = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
-        btn_y = telebot.types.KeyboardButton('Да')
-        btn_n = telebot.types.KeyboardButton('Нет')
-        markup.add(btn_y, btn_n)
-        sent = bot.send_message(message.chat.id, f'Хотите изменить название группы?', reply_markup=markup)
-        bot.register_next_step_handler(sent, group_choice)
+    #     markup = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+    #     btn_y = telebot.types.KeyboardButton('Да')
+    #     btn_n = telebot.types.KeyboardButton('Нет')
+    #     markup.add(btn_y, btn_n)
+    #     sent = bot.send_message(message.chat.id, f'Хотите изменить название группы?', reply_markup=markup)
+    #     bot.register_next_step_handler(sent, group_choice)
     
     
-    def group_choice(message):
-        '''Изменить группу или нет(если пользователь уже вводил группу)'''
-        if message.text == '/schedule':
-            bot.clear_step_handler_by_chat_id(message.chat.id)  # отменяем текущие ожидания
-            getting_group_name(message)  # вызываем начальный обработчик
-            return
+    # def group_choice(message):
+    #     '''Изменить группу или нет(если пользователь уже вводил группу)'''
+    #     if message.text == '/schedule':
+    #         bot.clear_step_handler_by_chat_id(message.chat.id)  # отменяем текущие ожидания
+    #         getting_group_name(message)  # вызываем начальный обработчик
+    #         return
         
-        if message.text == 'Да' or message.text == 'да' or message.text == 'ДА':
-            with open('users.json', 'r', encoding='utf-8') as f:
-                users = json.load(f)
-            del users[message.from_user.username]
-            with open('users.json', 'w', encoding='utf-8') as f:
-                users = json.dump(users, f, ensure_ascii=False, indent=2)
-            getting_group_name(message)
-        elif message.text == 'Нет' or message.text == 'нет' or message.text == 'НЕТ':
-            # обновление расписания
-            with open('users.json', 'r', encoding='utf-8') as f:
-                users = json.load(f)
+    #     if message.text == 'Да' or message.text == 'да' or message.text == 'ДА':
+    #         with open('users.json', 'r', encoding='utf-8') as f:
+    #             users = json.load(f)
+    #         del users[message.from_user.username]
+    #         with open('users.json', 'w', encoding='utf-8') as f:
+    #             users = json.dump(users, f, ensure_ascii=False, indent=2)
+    #         getting_group_name(message)
+    #     elif message.text == 'Нет' or message.text == 'нет' or message.text == 'НЕТ':
+    #         # обновление расписания
+    #         with open('users.json', 'r', encoding='utf-8') as f:
+    #             users = json.load(f)
             
-            schedule = get_schedule(users[message.from_user.username]["group"])
-            users[message.from_user.username]["schedule"] = schedule
+    #         schedule = get_schedule(users[message.from_user.username]["group"])
+    #         users[message.from_user.username]["schedule"] = schedule
             
-            with open('users.json', 'w', encoding='utf-8') as f:
-                users = json.dump(users, f, ensure_ascii=False, indent=2)
-            getting_choice(message)
-        else:
-            sent = bot.reply_to(message, "Введите Да или Нет")
-            bot.register_next_step_handler(sent, group_choice)
+    #         with open('users.json', 'w', encoding='utf-8') as f:
+    #             users = json.dump(users, f, ensure_ascii=False, indent=2)
+    #         getting_choice(message)
+    #     else:
+    #         sent = bot.reply_to(message, "Введите Да или Нет")
+    #         bot.register_next_step_handler(sent, group_choice)
     
     
     def getting_choice(message):
