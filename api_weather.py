@@ -1,11 +1,5 @@
 import json
 import requests
-import os 
-import dotenv
-
-dotenv.load_dotenv()
-
-API_WEATHER_TOKEN = os.getenv('API_WEATHER_TOKEN')
 
 emoji_dict = {
     "Ясно": "☀️",
