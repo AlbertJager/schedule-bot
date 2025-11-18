@@ -1,9 +1,12 @@
+import os
 from schedule import get_schedule
 import telebot
-from config import TOKEN
+from dotenv import load_dotenv
 import json
 import datetime
-API_TOKEN = TOKEN
+
+load_dotenv()
+API_TOKEN = os.getenv('API_TOKEN')
 
 if __name__=='__main__':
     bot = telebot.TeleBot(API_TOKEN)
