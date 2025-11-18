@@ -111,11 +111,11 @@ if __name__=='__main__':
     def getting_new_changed_city(message):
         '''Просит ввести город'''
         sent = bot.reply_to(message, 'Введите название города', reply_markup= telebot.types.ReplyKeyboardRemove())
-        bot.register_next_step_handler(sent, change_city)
+        bot.register_next_step_handler(sent, changing_city)
 
     
     def changing_city(message):
-        '''Изменение группы в БД'''
+        '''Изменение города в БД'''
         if message.text.startswith('/'):
             handle_commands(message)
         else:
