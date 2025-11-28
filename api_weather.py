@@ -73,9 +73,9 @@ emoji_dict = {
 def get_weather(city, API_WEATHER_TOKEN):
     response = requests.get(f'https://api.openweathermap.org/data/2.5/weather?q={city}&units=metric&lang=ru&appid={API_WEATHER_TOKEN}')
     res = json.loads(response.text)
-    
+    if response.status_code != 200:
+        return (response.status_code, "")
     description = res["weather"][0]["description"].capitalize()
     
     temp = int(res["main"]["temp"])
-    
     return (response.status_code, f'{emoji_dict[description]} {description} | {temp}°C')
